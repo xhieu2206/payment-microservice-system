@@ -1,0 +1,18 @@
+### CREATE A TRANSACTION
+POST http://localhost:3002/api/transactions
+Content-Type: application/json
+
+{
+"orderId": 1
+}
+
+### GET TRANSACTION DETAIL
+http://localhost:3002/api/transactions/1
+
+### UPDATE TRANSACTION STATUS
+PATCH http://localhost:3002/api/transactions/1
+Content-Type: application/json
+
+{
+"status": "confirmed"
+}
