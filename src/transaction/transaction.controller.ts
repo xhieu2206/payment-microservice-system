@@ -5,7 +5,6 @@ import {
   HttpService,
   Param,
   Patch,
-  Post,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { Transaction } from './entities/transaction.entity';
@@ -13,7 +12,7 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { EventPattern } from '@nestjs/microservices';
 import { Order } from './entities/Order';
-import { transactionStatusGenerator } from '../utils/utils';
+import { transactionStatusGenerator, pinCodeGenerator } from '../utils/utils';
 
 @Controller('transactions')
 export class TransactionController {
@@ -40,6 +39,8 @@ export class TransactionController {
     const createTransactionDto = new CreateTransactionDto();
     createTransactionDto.orderId = order.id;
     createTransactionDto.status = transactionStatusGenerator();
+    createTransactionDto.pin =
+      createTransactionDto.status === 'confirmed' ? pinCodeGenerator() : null;
     await this.transactionService.create(createTransactionDto);
     this.httpService
       .patch(`http://localhost:3001/api/orders/${order.id}`, {
@@ -54,6 +55,7 @@ export class TransactionController {
           createTransactionDto.status === 'confirmed'
             ? 'confirmed'
             : 'cancelled',
+        pin: createTransactionDto.pin,
       })
       .subscribe((res) => console.log(res.status));
   }

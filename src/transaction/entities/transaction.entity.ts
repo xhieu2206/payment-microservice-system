@@ -12,7 +12,7 @@ export class Transaction {
   status: string;
 
   @Column({ name: 'pin_code', nullable: true })
-  pin: string;
+  pin: number;
 
   @Column({
     name: 'created_at',
@@ -25,6 +25,7 @@ export class Transaction {
     name: 'transaction_date',
     type: 'datetime',
     nullable: true,
+    default: () => 'CURRENT_TIMESTAMP',
   })
   transactionDate: Date;
 }
