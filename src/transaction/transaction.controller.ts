@@ -43,7 +43,7 @@ export class TransactionController {
       createTransactionDto.status === 'confirmed' ? pinCodeGenerator() : null;
     await this.transactionService.create(createTransactionDto);
     this.httpService
-      .patch(`http://localhost:3001/api/orders/${order.id}`, {
+      .put(`http://localhost:3001/api/orders/${order.id}`, {
         productName: order.productName,
         image: order.image,
         quantity: order.quantity,
