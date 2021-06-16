@@ -1,5 +1,5 @@
 export const transactionStatusGenerator = (): string => {
-  return Math.random() < 0.5 ? 'confirmed' : 'declined';
+  return Math.random() < 0.7 ? 'confirmed' : 'declined';
 };
 
 export const pinCodeGenerator = (min = 1000, max = 9999): number => {
