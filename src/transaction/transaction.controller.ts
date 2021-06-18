@@ -14,17 +14,19 @@ export class TransactionController {
   @EventPattern('order_created')
   async create(order: Order) {
     const newTransaction = await this.transactionService.create(order);
-    console.log(newTransaction);
+    const status =
+      newTransaction.status === PaymentStatusEnum.DECLINED
+        ? PaymentOrderStatusMapping.get(PaymentStatusEnum.DECLINED)
+        : PaymentOrderStatusMapping.get(PaymentStatusEnum.CONFIRMED);
     this.httpService
-      .patch(`http://localhost:3001/api/orders/${order.id}`, {
-        status:
-          newTransaction.status === PaymentStatusEnum.DECLINED
-            ? PaymentOrderStatusMapping.get(PaymentStatusEnum.DECLINED)
-            : PaymentOrderStatusMapping.get(PaymentStatusEnum.CONFIRMED),
+      .patch(`http://localhost:3001/api/order-payment/${order.id}`, {
+        status,
         pin: newTransaction.pin,
       })
       .toPromise()
-      .then(() => console.log(`Update order's status successfully`))
-      .catch(() => console.log("Error happened while updating order's status"));
+      .then(() => console.log("Update order's status successfully"))
+      .catch(() =>
+        console.log("Error happened while updating order's status: "),
+      );
   }
 }

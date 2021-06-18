@@ -14,5 +14,5 @@ export class CreateTransactionDto {
   @IsIn(['confirmed', 'declined'])
   status: string;
 
-  pin: number | null;
+  pin?: number | null;
 }
