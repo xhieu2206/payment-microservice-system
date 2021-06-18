@@ -1,18 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpService,
-  Param,
-  Patch,
-} from '@nestjs/common';
+import { Controller, HttpService } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { Transaction } from './entities/transaction.entity';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { EventPattern } from '@nestjs/microservices';
 import { Order } from './entities/Order';
-import { transactionStatusGenerator, pinCodeGenerator } from '../utils/utils';
+import { PaymentOrderStatusMapping, PaymentStatusEnum } from '../enums/enums';
 
 @Controller('transactions')
 export class TransactionController {
@@ -21,42 +11,20 @@ export class TransactionController {
     private httpService: HttpService,
   ) {}
 
-  @Get(':id')
-  get(@Param('id') id: number): Promise<Transaction> {
-    return this.transactionService.get(id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param(':id') id: number,
-    @Body() updateTransactionDto: UpdateTransactionDto,
-  ): Promise<Transaction> {
-    return this.transactionService.update(id, updateTransactionDto);
-  }
-
   @EventPattern('order_created')
   async create(order: Order) {
-    const createTransactionDto = new CreateTransactionDto();
-    createTransactionDto.orderId = order.id;
-    createTransactionDto.status = transactionStatusGenerator();
-    createTransactionDto.pin =
-      createTransactionDto.status === 'confirmed' ? pinCodeGenerator() : null;
-    await this.transactionService.create(createTransactionDto);
+    const newTransaction = await this.transactionService.create(order);
+    console.log(newTransaction);
     this.httpService
-      .put(`http://localhost:3001/api/orders/${order.id}`, {
-        productName: order.productName,
-        image: order.image,
-        quantity: order.quantity,
-        deliveryAddress: order.deliveryAddress,
-        customerName: order.customerName,
-        phone: order.phone,
-        email: order.email,
+      .patch(`http://localhost:3001/api/orders/${order.id}`, {
         status:
-          createTransactionDto.status === 'confirmed'
-            ? 'confirmed'
-            : 'cancelled',
-        pin: createTransactionDto.pin,
+          newTransaction.status === PaymentStatusEnum.DECLINED
+            ? PaymentOrderStatusMapping.get(PaymentStatusEnum.DECLINED)
+            : PaymentOrderStatusMapping.get(PaymentStatusEnum.CONFIRMED),
+        pin: newTransaction.pin,
       })
-      .subscribe((res) => console.log(res.status));
+      .toPromise()
+      .then(() => console.log(`Update order's status successfully`))
+      .catch(() => console.log("Error happened while updating order's status"));
   }
 }

@@ -1,5 +1,9 @@
+import { PaymentStatusEnum } from '../enums/enums';
+
 export const transactionStatusGenerator = (): string => {
-  return Math.random() < 0.7 ? 'confirmed' : 'declined';
+  return Math.random() < 0.6
+    ? PaymentStatusEnum.CONFIRMED
+    : PaymentStatusEnum.DECLINED;
 };
 
 export const pinCodeGenerator = (min = 1000, max = 9999): number => {

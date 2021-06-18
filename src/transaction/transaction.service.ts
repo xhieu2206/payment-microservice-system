@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transaction } from './entities/transaction.entity';
+import { Order } from './entities/Order';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { pinCodeGenerator, transactionStatusGenerator } from '../utils/utils';
+import { PaymentStatusEnum } from '../enums/enums';
 
 @Injectable()
 export class TransactionService {
@@ -12,29 +14,16 @@ export class TransactionService {
     private readonly transactionRepository: Repository<Transaction>,
   ) {}
 
-  async create(
-    createTransactionDto: CreateTransactionDto,
-  ): Promise<Transaction> {
+  async create(order: Order): Promise<Transaction> {
+    const status = transactionStatusGenerator();
+    const createTransactionDto = new CreateTransactionDto(
+      order.id,
+      status,
+      status === PaymentStatusEnum.CONFIRMED ? pinCodeGenerator() : null,
+    );
     const newTransaction = await this.transactionRepository.create({
       ...createTransactionDto,
     });
     return this.transactionRepository.save(newTransaction);
-  }
-
-  async get(id: number): Promise<Transaction> {
-    return this.transactionRepository.findOne(id);
-  }
-
-  async update(
-    id: number,
-    updateTransactionDto: UpdateTransactionDto,
-  ): Promise<Transaction> {
-    let updateTransaction = await this.transactionRepository.findOne(id);
-    updateTransaction = {
-      ...updateTransaction,
-      ...updateTransactionDto,
-      transactionDate: new Date(),
-    };
-    return this.transactionRepository.save(updateTransaction);
   }
 }
