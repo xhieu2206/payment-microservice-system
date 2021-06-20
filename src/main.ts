@@ -6,9 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice(AppModule, {
     transport: Transport.RMQ,
     options: {
-      urls: [
-        'amqps://pmhdtbdy:ROUFcuWj4GH-jFrxsqtrxf6jgpUlB2ld@snake.rmq2.cloudamqp.com/pmhdtbdy',
-      ],
+      urls: [process.env.RMQ_CLOUD],
       queue: 'payment_queue',
       queueOptions: {
         durable: false,
